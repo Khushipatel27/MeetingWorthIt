@@ -63,41 +63,69 @@ function Section({ title, children }) {
   )
 }
 
-function SavingsCalculator({ annualCost, recurrence }) {
+function SavingsCard({ annualCost, recurrence, score }) {
   if (recurrence === 'one-time' || annualCost < 500) return null
+
+  // Calculate potential savings based on score
+  // Low score = high savings potential, high score = low savings
+  let savingsPercent, savingsLabel, savingsBg, savingsBorder, savingsColor
+  if (score <= 3) {
+    savingsPercent = 0.85
+    savingsLabel = 'Cancel or replace with async — recover most of this cost'
+    savingsBg = 'rgba(239,68,68,0.08)'
+    savingsBorder = 'rgba(239,68,68,0.2)'
+    savingsColor = '#ef4444'
+  } else if (score <= 5) {
+    savingsPercent = 0.50
+    savingsLabel = 'Cut attendees and shorten — save half the annual spend'
+    savingsBg = 'rgba(245,158,11,0.08)'
+    savingsBorder = 'rgba(245,158,11,0.2)'
+    savingsColor = '#f59e0b'
+  } else if (score <= 7) {
+    savingsPercent = 0.25
+    savingsLabel = 'Optimize attendees — reduce cost by up to 25%'
+    savingsBg = 'rgba(0,255,135,0.06)'
+    savingsBorder = 'rgba(0,255,135,0.15)'
+    savingsColor = '#00ff87'
+  } else {
+    return null // high score = meeting is justified, no savings to show
+  }
+
+  const potentialSavings = Math.round(annualCost * savingsPercent)
+
   return (
     <div
       className="rounded-xl p-4 text-center"
-      style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)' }}
+      style={{ background: savingsBg, border: `1px solid ${savingsBorder}` }}
     >
-      <p className="text-white/50 text-xs uppercase tracking-widest mb-1 font-medium">
-        Cancel This Meeting → Save
+      <p className="text-white/40 text-[11px] uppercase tracking-[0.15em] font-semibold mb-2">
+        Potential Annual Savings
       </p>
       <p
-        className="font-black text-3xl"
-        style={{ fontFamily: 'Outfit, sans-serif', color: '#ef4444' }}
+        className="font-black text-3xl leading-none mb-2"
+        style={{ fontFamily: 'Outfit, sans-serif', color: savingsColor }}
       >
-        ${Math.round(annualCost).toLocaleString()}
-        <span className="text-base font-normal text-white/30 ml-1">/year</span>
+        ${potentialSavings.toLocaleString()}
+        <span className="text-sm font-normal text-white/25 ml-1">/year</span>
+      </p>
+      <p className="text-white/35 text-xs leading-relaxed max-w-xs mx-auto">
+        {savingsLabel}
       </p>
     </div>
   )
 }
 
-export default function VerdictPanel({ verdict, attendees, annualCost, recurrence }) {
+export default function VerdictPanel({ verdict, attendees, annualCost, recurrence, meetLink }) {
   const [showAsyncTooltip, setShowAsyncTooltip] = useState(false)
   const [markedWorthIt, setMarkedWorthIt] = useState(false)
-  const showSavings = verdict.necessityScore <= 4 && recurrence !== 'one-time'
 
   return (
     <div className="card space-y-5 verdict-animate">
       {/* Score */}
       <ScoreBadge score={verdict.necessityScore} label={verdict.scoreLabel} />
 
-      {/* Savings calculator — only shown for low scores */}
-      {showSavings && (
-        <SavingsCalculator annualCost={annualCost} recurrence={recurrence} />
-      )}
+      {/* Savings card — shown for low/medium scores with recurring meetings */}
+      <SavingsCard annualCost={annualCost} recurrence={recurrence} score={verdict.necessityScore} />
 
       {/* Key Question */}
       <Section title="Key Question to Answer">
@@ -115,7 +143,7 @@ export default function VerdictPanel({ verdict, attendees, annualCost, recurrenc
           {verdict.attendeeAnalysis?.map((a, i) => (
             <div
               key={i}
-              className="flex items-start justify-between gap-3 p-3 rounded-lg"
+              className="flex items-start justify-between gap-3 p-3 rounded-lg transition-all duration-200 hover:bg-white/[0.04]"
               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
             >
               <div>
@@ -164,6 +192,29 @@ export default function VerdictPanel({ verdict, attendees, annualCost, recurrenc
           💡 {verdict.actionableFix}
         </div>
       </Section>
+
+      {/* Google Meet button — only if imported from Google Calendar */}
+      {meetLink && (
+        <a
+          href={meetLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold transition-all"
+          style={{
+            background: verdict.necessityScore >= 5
+              ? 'linear-gradient(135deg, rgba(0,255,135,0.15), rgba(0,204,106,0.1))'
+              : 'rgba(255,255,255,0.05)',
+            border: `1px solid ${verdict.necessityScore >= 5 ? 'rgba(0,255,135,0.3)' : 'rgba(255,255,255,0.1)'}`,
+            color: verdict.necessityScore >= 5 ? '#00ff87' : 'rgba(255,255,255,0.4)',
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"
+              stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          {verdict.necessityScore >= 5 ? 'Join Google Meet — Worth It ✓' : 'Join Google Meet Anyway'}
+        </a>
+      )}
 
       {/* Action buttons */}
       <div className="flex gap-3 pt-1">

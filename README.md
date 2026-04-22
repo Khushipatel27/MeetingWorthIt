@@ -109,16 +109,3 @@ Built with 💙 at **Marshall Tech Fest Hackathon — April 11th, 2025**
 | Mansi Suryawanshi | [@MansiSuryawanshi](https://github.com/MansiSuryawanshi) |
 
 ---
-
-## 📬 Connect
-
-Have feedback, ideas, or just want to say hi?
-
-[![LinkedIn](https://img.shields.io/badge/Khushi%20Patel-LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://linkedin.com/in/khushipatel2024)
-[![GitHub](https://img.shields.io/badge/Khushipatel27-GitHub-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/Khushipatel27)
-
----
-
-<p align="center">
-  <i>Stop normalizing meetings as productivity. Start protecting the time that actually moves the needle. 🚀</i>
-</p>
